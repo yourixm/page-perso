@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>First Secretariat Medical / L&C Services - Béthune / Noeux-les-Mines</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #0a3d91, #1e90ff);
+      color: white;
+    }
+    header {
+      position: sticky;
+      top: 0;
+      background: rgba(0,0,0,0.5);
+      padding: 15px;
+      text-align: center;
+      color: yellow;
+      font-size: 28px;
+    }
+    main {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 16px;
+      max-width: 1200px;
+      margin: 20px auto;
+    }
+    .video {
+      position: relative;
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 16px;
+    }
+    .video iframe, #twitch-embed1, #twitch-embed2 {
+      width: 100%;
+      height: 300px;
+      border: none;
+    }
+    .meteo {
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .clock {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: rgba(0,0,0,0.6);
+      padding: 10px 15px;
+      border-radius: 8px;
+      font-size: 16px;
+      color: #ff0000;
+      font-weight: bold;
+      z-index: 10;
+    }
+    .fallback-iframe {
+      width: 100%;
+      height: 300px;
+      border: none;
+      border-radius: 10px;
+    }
+  </style>
+  <script src="https://player.twitch.tv/js/embed/v1.js"></script>
+</head>
+<body>
+  <header>FIRST SECRETARIAT MEDICAL /\ L&C SERVICES</header>
+  <main>
+    <section>
+      <!-- Premier live -->
+      <div class="video">
+        <div id="twitch-embed1"></div>
+        <div class="clock" id="clock"></div>
+      </div>
+      <!-- Deuxième live -->
+      <div class="video">
+        <div id="twitch-embed2"></div>
+      </div>
+    </section>
+    <section class="meteo">
+      <iframe id="meteoFrame"
+        src="https://www.meteoblue.com/fr/meteo/widget/three/noeux-les-mines_france_2990070?geoloc=fixed&days=3&tempunit=CELSIUS&windunit=KILOMETER_PER_HOUR&layout=dark"
+        frameborder="0" scrolling="NO"
+        style="width:100%; height:616px;">
+      </iframe>
+    </section>
+  </main>
+
+  <script>
+    // Fonction pour obtenir les domaines parents appropriés
+    function getParentDomains() {
+      const hostname = window.location.hostname;
+      const parents = [];
+      
+      // Toujours ajouter le hostname actuel en premier
+      if (hostname) {
+        parents.push(hostname);
+      }
+      
+      // Ajouter des domaines de fallback
+      if (hostname !== "localhost") {
+        parents.push("localhost");
+      }
+      if (hostname !== "127.0.0.1") {
+        parents.push("127.0.0.1");
+      }
+      
+      // Si c'est un domaine hébergé (comme GitHub Pages, Netlify, etc.)
+      const commonHosts = ['github.io', 'netlify.app', 'vercel.app', 'surge.sh'];
+      commonHosts.forEach(host => {
+        if (hostname.includes(host) && !parents.includes(hostname)) {
+          parents.push(hostname);
+        }
+      });
+      
+      return parents;
+    }
+
+    // Fonction de fallback avec iframe direct
+    function createFallbackPlayer(containerId, channel) {
+      const container = document.getElementById(containerId);
+      if (!container) return;
+      
+      console.log(`Création du fallback iframe pour ${channel}`);
+      
+      // Essayer avec différents parents
+      const hostname = window.location.hostname;
+      let parentParam;
+      
+      if (hostname === 'localhost' || hostname === '127.0.0.1') {
+        parentParam = 'parent=localhost';
+      } else if (hostname.includes('github.io')) {
+        parentParam = `parent=${hostname}`;
+      } else if (hostname.includes('netlify.app')) {
+        parentParam = `parent=${hostname}`;
+      } else if (hostname.includes('vercel.app')) {
+        parentParam = `parent=${hostname}`;
+      } else {
+        parentParam = `parent=${hostname}`;
+      }
+      
+      const iframeUrl = `https://player.twitch.tv/?channel=${channel}&${parentParam}&autoplay=true&muted=true`;
+      
+      container.innerHTML = `
+        <iframe class="fallback-iframe" 
+                src="${iframeUrl}" 
+                allowfullscreen>
+        </iframe>`;
+      
+      console.log(`Fallback créé: ${iframeUrl}`);
+    }
+
+    // Tentative de plein écran automatique au chargement
+    function requestFullscreenOnLoad() {
+      setTimeout(() => {
+        if (document.documentElement.requestFullscreen) {
+          document.documentElement.requestFullscreen()
+            .then(() => console.log('Plein écran activé'))
+            .catch(err => console.log('Plein écran bloqué:', err.message));
+        } else if (document.documentElement.webkitRequestFullscreen) {
+          document.documentElement.webkitRequestFullscreen();
+        } else if (document.documentElement.msRequestFullscreen) {
+          document.documentElement.msRequestFullscreen();
+        }
+      }, 1000);
+    }
+
+    // Activer le plein écran au clic sur la page (fallback)
+    function enableFullscreenOnClick() {
+      document.addEventListener('click', function() {
+        if (!document.fullscreenElement && !document.webkitFullscreenElement && !document.msFullscreenElement) {
+          requestFullscreenOnLoad();
+        }
+      }, { once: true });
+    }
+
+    // Remettre automatiquement en plein écran si on en sort
+    document.addEventListener('fullscreenchange', function() {
+      if (!document.fullscreenElement) {
+        console.log('Sortie du plein écran détectée');
+        setTimeout(() => {
+          requestFullscreenOnLoad();
+        }, 2000);
+      }
+    });
+
+    // Bloquer la touche Échap pour éviter de sortir du plein écran
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        console.log('Touche Échap bloquée');
+      }
+    });
+
+    // Initialisation au chargement de la page
+    window.addEventListener('load', function() {
+      const parentDomains = getParentDomains();
+      console.log('Domaines parents utilisés:', parentDomains);
+      console.log('Hostname actuel:', window.location.hostname);
+      
+      // Essayer d'abord l'API JavaScript Twitch
+      let player1Success = false, player2Success = false;
+      
+      // Twitch Player 1 (villebethunegplace)
+      try {
+        const player1 = new Twitch.Player("twitch-embed1", {
+          channel: "villebethunegplace",
+          width: "100%",
+          height: "100%",
+          autoplay: true,
+          muted: true,
+          parent: parentDomains
+        });
+        
+        player1.addEventListener(Twitch.Player.READY, () => {
+          console.log('Twitch Player 1 prêt');
+          player1Success = true;
+        });
+        
+        console.log('Twitch Player 1 initialisé');
+      } catch (error) {
+        console.error('Erreur Twitch Player 1:', error);
+      }
+
+      // Twitch Player 2 (villebethune)
+      try {
+        const player2 = new Twitch.Player("twitch-embed2", {
+          channel: "villebethune",
+          width: "100%",
+          height: "100%",
+          autoplay: true,
+          muted: true,
+          parent: parentDomains
+        });
+        
+        player2.addEventListener(Twitch.Player.READY, () => {
+          console.log('Twitch Player 2 prêt');
+          player2Success = true;
+        });
+        
+        console.log('Twitch Player 2 initialisé');
+      } catch (error) {
+        console.error('Erreur Twitch Player 2:', error);
+      }
+      
+      // Fallback après 5 secondes si l'API JS ne marche pas
+      setTimeout(() => {
+        if (!player1Success) {
+          console.log('Fallback pour Player 1');
+          createFallbackPlayer('twitch-embed1', 'villebethunegplace');
+        }
+        if (!player2Success) {
+          console.log('Fallback pour Player 2');
+          createFallbackPlayer('twitch-embed2', 'villebethune');
+        }
+      }, 5000);
+      
+      requestFullscreenOnLoad();
+      enableFullscreenOnClick();
+    });
+
+    // Horloge (date + heure)
+    function updateClock() {
+      const now = new Date();
+      const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+      const date = now.toLocaleDateString('fr-FR', options);
+      const time = now.toLocaleTimeString('fr-FR');
+      document.getElementById("clock").innerHTML = date + "<br>" + time;
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // Refresh météo toutes les 10 min
+    setInterval(() => {
+      const frame = document.getElementById("meteoFrame");
+      frame.src = frame.src;
+    }, 600000);
+  </script>
+</body>
+</html>
