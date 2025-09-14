@@ -46,19 +46,97 @@
       position: absolute;
       top: 10px;
       right: 10px;
-      background: rgba(0,0,0,0.6);
-      padding: 10px 15px;
-      border-radius: 8px;
-      font-size: 16px;
-      color: #ff0000;
-      font-weight: bold;
+      width: 150px;
+      height: 150px;
       z-index: 10;
+    }
+    .analog-clock {
+      width: 150px;
+      height: 150px;
+      border-radius: 50%;
+      background: radial-gradient(circle, #ff0000, #cc0000);
+      border: 5px solid #ffff00;
+      position: relative;
+      box-shadow: 0 0 20px rgba(255, 0, 0, 0.8), inset 0 0 20px rgba(0, 0, 0, 0.3);
+      animation: pulse 2s infinite ease-in-out;
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+    .clock-center {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 12px;
+      height: 12px;
+      background: #ffff00;
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 10;
+      box-shadow: 0 0 10px rgba(255, 255, 0, 1);
+    }
+    .hour-hand {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 4px;
+      height: 40px;
+      background: linear-gradient(to top, #ffff00, #ffffff);
+      transform-origin: bottom center;
+      transform: translate(-50%, -100%);
+      border-radius: 2px;
+      box-shadow: 0 0 8px rgba(255, 255, 0, 0.8);
+      z-index: 3;
+    }
+    .minute-hand {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 3px;
+      height: 55px;
+      background: linear-gradient(to top, #00ff00, #ffffff);
+      transform-origin: bottom center;
+      transform: translate(-50%, -100%);
+      border-radius: 1.5px;
+      box-shadow: 0 0 6px rgba(0, 255, 0, 0.8);
+      z-index: 2;
+    }
+    .second-hand {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 1px;
+      height: 65px;
+      background: linear-gradient(to top, #ff00ff, #ffffff);
+      transform-origin: bottom center;
+      transform: translate(-50%, -100%);
+      z-index: 1;
+      box-shadow: 0 0 4px rgba(255, 0, 255, 1);
     }
     .fallback-iframe {
       width: 100%;
       height: 300px;
       border: none;
       border-radius: 10px;
+    }
+    #dateDisplay {
+      background: radial-gradient(circle, #ff0000, #cc0000);
+      border: 3px solid #ffff00;
+      border-radius: 10px;
+      padding: 15px;
+      text-align: center;
+      font-size: 18px;
+      color: #ffff00;
+      font-weight: bold;
+      margin-top: 10px;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+      box-shadow: 0 0 15px rgba(255, 0, 0, 0.6);
+      animation: pulse 3s infinite ease-in-out;
+      min-height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
   </style>
   <script src="https://player.twitch.tv/js/embed/v1.js"></script>
@@ -67,12 +145,17 @@
   <header>FIRST SECRETARIAT MEDICAL /\ L&C SERVICES</header>
   <main>
     <section>
-      <!-- Premier live -->
       <div class="video">
         <div id="twitch-embed1"></div>
-        <div class="clock" id="clock"></div>
+        <div class="clock" id="clock">
+          <div class="analog-clock">
+            <div class="hour-hand" id="hourHand"></div>
+            <div class="minute-hand" id="minuteHand"></div>
+            <div class="second-hand" id="secondHand"></div>
+            <div class="clock-center"></div>
+          </div>
+        </div>
       </div>
-      <!-- Deuxième live -->
       <div class="video">
         <div id="twitch-embed2"></div>
       </div>
@@ -81,8 +164,9 @@
       <iframe id="meteoFrame"
         src="https://www.meteoblue.com/fr/meteo/widget/three/noeux-les-mines_france_2990070?geoloc=fixed&days=3&tempunit=CELSIUS&windunit=KILOMETER_PER_HOUR&layout=dark"
         frameborder="0" scrolling="NO"
-        style="width:100%; height:616px;">
+        style="width:100%; height:550px;">
       </iframe>
+      <div id="dateDisplay">Chargement de la date...</div>
     </section>
   </main>
 
@@ -92,12 +176,10 @@
       const hostname = window.location.hostname;
       const parents = [];
       
-      // Toujours ajouter le hostname actuel en premier
       if (hostname) {
         parents.push(hostname);
       }
       
-      // Ajouter des domaines de fallback
       if (hostname !== "localhost") {
         parents.push("localhost");
       }
@@ -105,7 +187,6 @@
         parents.push("127.0.0.1");
       }
       
-      // Si c'est un domaine hébergé (comme GitHub Pages, Netlify, etc.)
       const commonHosts = ['github.io', 'netlify.app', 'vercel.app', 'surge.sh'];
       commonHosts.forEach(host => {
         if (hostname.includes(host) && !parents.includes(hostname)) {
@@ -123,7 +204,6 @@
       
       console.log(`Création du fallback iframe pour ${channel}`);
       
-      // Essayer avec différents parents
       const hostname = window.location.hostname;
       let parentParam;
       
@@ -150,47 +230,40 @@
       console.log(`Fallback créé: ${iframeUrl}`);
     }
 
-    // Tentative de plein écran automatique au chargement
-    function requestFullscreenOnLoad() {
-      setTimeout(() => {
-        if (document.documentElement.requestFullscreen) {
-          document.documentElement.requestFullscreen()
-            .then(() => console.log('Plein écran activé'))
-            .catch(err => console.log('Plein écran bloqué:', err.message));
-        } else if (document.documentElement.webkitRequestFullscreen) {
-          document.documentElement.webkitRequestFullscreen();
-        } else if (document.documentElement.msRequestFullscreen) {
-          document.documentElement.msRequestFullscreen();
-        }
-      }, 1000);
+    function updateAnalogClock() {
+      const now = new Date();
+      const hours = now.getHours() % 12;
+      const minutes = now.getMinutes();
+      const seconds = now.getSeconds();
+      const hourAngle = (hours * 30) + (minutes * 0.5);
+      const minuteAngle = minutes * 6;
+      const secondAngle = seconds * 6;
+      const hourHand = document.getElementById('hourHand');
+      const minuteHand = document.getElementById('minuteHand');
+      const secondHand = document.getElementById('secondHand');
+      if (hourHand) {
+        hourHand.style.transform = `translate(-50%, -100%) rotate(${hourAngle}deg)`;
+      }
+      if (minuteHand) {
+        minuteHand.style.transform = `translate(-50%, -100%) rotate(${minuteAngle}deg)`;
+      }
+      if (secondHand) {
+        secondHand.style.transform = `translate(-50%, -100%) rotate(${secondAngle}deg)`;
+      }
     }
 
-    // Activer le plein écran au clic sur la page (fallback)
-    function enableFullscreenOnClick() {
-      document.addEventListener('click', function() {
-        if (!document.fullscreenElement && !document.webkitFullscreenElement && !document.msFullscreenElement) {
-          requestFullscreenOnLoad();
-        }
-      }, { once: true });
+    function updateDate() {
+      const now = new Date();
+      const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+      const dateStr = now.toLocaleDateString('fr-FR', options);
+      const display = document.getElementById("dateDisplay");
+      if (display) {
+        display.textContent = dateStr.toUpperCase();
+        console.log('Date mise à jour:', dateStr);
+      } else {
+        console.log('Element dateDisplay non trouvé');
+      }
     }
-
-    // Remettre automatiquement en plein écran si on en sort
-    document.addEventListener('fullscreenchange', function() {
-      if (!document.fullscreenElement) {
-        console.log('Sortie du plein écran détectée');
-        setTimeout(() => {
-          requestFullscreenOnLoad();
-        }, 2000);
-      }
-    });
-
-    // Bloquer la touche Échap pour éviter de sortir du plein écran
-    document.addEventListener('keydown', function(e) {
-      if (e.key === 'Escape') {
-        e.preventDefault();
-        console.log('Touche Échap bloquée');
-      }
-    });
 
     // Initialisation au chargement de la page
     window.addEventListener('load', function() {
@@ -198,52 +271,56 @@
       console.log('Domaines parents utilisés:', parentDomains);
       console.log('Hostname actuel:', window.location.hostname);
       
-      // Essayer d'abord l'API JavaScript Twitch
       let player1Success = false, player2Success = false;
       
-      // Twitch Player 1 (villebethunegplace)
-      try {
-        const player1 = new Twitch.Player("twitch-embed1", {
-          channel: "villebethunegplace",
-          width: "100%",
-          height: "100%",
-          autoplay: true,
-          muted: true,
-          parent: parentDomains
-        });
-        
-        player1.addEventListener(Twitch.Player.READY, () => {
-          console.log('Twitch Player 1 prêt');
-          player1Success = true;
-        });
-        
-        console.log('Twitch Player 1 initialisé');
-      } catch (error) {
-        console.error('Erreur Twitch Player 1:', error);
+      // Fonction pour initialiser un player Twitch avec retry
+      function initTwitchPlayer(containerId, channel, playerNumber) {
+        setTimeout(() => {
+          try {
+            const player = new Twitch.Player(containerId, {
+              channel: channel,
+              width: "100%",
+              height: "100%",
+              autoplay: true,
+              muted: true,
+              parent: parentDomains,
+              controls: false,
+              time: "0s"
+            });
+            
+            player.addEventListener(Twitch.Player.READY, () => {
+              console.log(`Twitch Player ${playerNumber} prêt`);
+              if (playerNumber === 1) player1Success = true;
+              if (playerNumber === 2) player2Success = true;
+              
+              // Forcer le play après 2 secondes
+              setTimeout(() => {
+                try {
+                  player.play();
+                  console.log(`Player ${playerNumber} force play`);
+                } catch (e) {
+                  console.log(`Erreur force play ${playerNumber}:`, e);
+                }
+              }, 2000);
+            });
+            
+            player.addEventListener(Twitch.Player.PAUSE, () => {
+              console.log(`Player ${playerNumber} en pause - tentative de relance`);
+              setTimeout(() => player.play(), 1000);
+            });
+            
+            console.log(`Twitch Player ${playerNumber} initialisé`);
+          } catch (error) {
+            console.error(`Erreur Twitch Player ${playerNumber}:`, error);
+          }
+        }, playerNumber * 1000);
       }
 
-      // Twitch Player 2 (villebethune)
-      try {
-        const player2 = new Twitch.Player("twitch-embed2", {
-          channel: "villebethune",
-          width: "100%",
-          height: "100%",
-          autoplay: true,
-          muted: true,
-          parent: parentDomains
-        });
-        
-        player2.addEventListener(Twitch.Player.READY, () => {
-          console.log('Twitch Player 2 prêt');
-          player2Success = true;
-        });
-        
-        console.log('Twitch Player 2 initialisé');
-      } catch (error) {
-        console.error('Erreur Twitch Player 2:', error);
-      }
+      // Initialiser les deux players avec décalage
+      initTwitchPlayer("twitch-embed1", "villebethunegplace", 1);
+      initTwitchPlayer("twitch-embed2", "villebethune", 2);
       
-      // Fallback après 5 secondes si l'API JS ne marche pas
+      // Fallback amélioré après 8 secondes si l'API JS ne marche pas
       setTimeout(() => {
         if (!player1Success) {
           console.log('Fallback pour Player 1');
@@ -253,22 +330,38 @@
           console.log('Fallback pour Player 2');
           createFallbackPlayer('twitch-embed2', 'villebethune');
         }
-      }, 5000);
+      }, 8000);
       
-      requestFullscreenOnLoad();
-      enableFullscreenOnClick();
+      // Double vérification après 15 secondes
+      setTimeout(() => {
+        const embed1 = document.getElementById('twitch-embed1');
+        const embed2 = document.getElementById('twitch-embed2');
+        
+        if (embed1 && (!embed1.innerHTML || embed1.innerHTML.trim() === '')) {
+          console.log('Double fallback pour Player 1');
+          createFallbackPlayer('twitch-embed1', 'villebethunegplace');
+        }
+        
+        if (embed2 && (!embed2.innerHTML || embed2.innerHTML.trim() === '')) {
+          console.log('Double fallback pour Player 2');
+          createFallbackPlayer('twitch-embed2', 'villebethune');
+        }
+      }, 15000);
     });
 
-    // Horloge (date + heure)
-    function updateClock() {
-      const now = new Date();
-      const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-      const date = now.toLocaleDateString('fr-FR', options);
-      const time = now.toLocaleTimeString('fr-FR');
-      document.getElementById("clock").innerHTML = date + "<br>" + time;
-    }
-    setInterval(updateClock, 1000);
-    updateClock();
+    // Démarrer l'horloge analogique
+    setInterval(updateAnalogClock, 1000);
+    updateAnalogClock();
+    
+    // Initialiser et mettre à jour la date
+    updateDate();
+    setInterval(updateDate, 60000);
+    
+    // Forcer la mise à jour de la date après le chargement complet
+    setTimeout(() => {
+      updateDate();
+      console.log('Date forcée après chargement');
+    }, 2000);
 
     // Refresh météo toutes les 10 min
     setInterval(() => {
