@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>First Secretariat Medical / L&C Services - Béthune / Noeux-les-Mines</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #0a3d91, #1e90ff);
+      color: white;
+    }
+    header {
+      position: sticky;
+      top: 0;
+      background: rgba(0,0,0,0.5);
+      padding: 15px;
+      text-align: center;
+      color: yellow;
+      font-size: 28px;
+    }
+    main {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 16px;
+      max-width: 1200px;
+      margin: 20px auto;
+    }
+    .video {
+      position: relative;
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 16px;
+    }
+    .video iframe, #twitch-embed2 {
+      width: 100%;
+      height: 300px;
+      border: none;
+    }
+    .meteo {
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .clock {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      width: 150px;
+      height: 150px;
+      z-index: 10;
+    }
+    .analog-clock {
+      width: 150px;
+      height: 150px;
+      border-radius: 50%;
+      background: radial-gradient(circle, #ff0000, #cc0000);
+      border: 5px solid #ffff00;
+      position: relative;
+      box-shadow: 0 0 20px rgba(255, 0, 0, 0.8), inset 0 0 20px rgba(0, 0, 0, 0.3);
+      animation: pulse 2s infinite ease-in-out;
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+    .clock-center {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 12px;
+      height: 12px;
+      background: #ffff00;
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 10;
+      box-shadow: 0 0 10px rgba(255, 255, 0, 1);
+    }
+    .hour-hand, .minute-hand, .second-hand {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform-origin: bottom center;
+    }
+    .hour-hand {
+      width: 4px;
+      height: 40px;
+      background: linear-gradient(to top, #ffff00, #ffffff);
+      transform: translate(-50%, -100%);
+      border-radius: 2px;
+      box-shadow: 0 0 8px rgba(255, 255, 0, 0.8);
+      z-index: 3;
+    }
+    .minute-hand {
+      width: 3px;
+      height: 55px;
+      background: linear-gradient(to top, #00ff00, #ffffff);
+      transform: translate(-50%, -100%);
+      border-radius: 1.5px;
+      box-shadow: 0 0 6px rgba(0, 255, 0, 0.8);
+      z-index: 2;
+    }
+    .second-hand {
+      width: 1px;
+      height: 65px;
+      background: linear-gradient(to top, #ff00ff, #ffffff);
+      transform: translate(-50%, -100%);
+      z-index: 1;
+      box-shadow: 0 0 4px rgba(255, 0, 255, 1);
+    }
+    #dateDisplay {
+      text-align: center;
+      font-size: 24px;
+      color: #ffff00;
+      font-weight: bold;
+      margin-top: 10px;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+    }
+  </style>
+  <script src="https://player.twitch.tv/js/embed/v1.js"></script>
+</head>
+<body>
+  <header>FIRST SECRETARIAT MEDICAL /\ L&C SERVICES</header>
+  <main>
+    <section>
+      <!-- Fenêtre haut gauche : Skaping -->
+      <div class="video">
+        <iframe src="https://www.skaping.com/berck-sur-mer/maritime/embed"
+                allowfullscreen></iframe>
+        <div class="clock" id="clock">
+          <div class="analog-clock">
+            <div class="hour-hand" id="hourHand"></div>
+            <div class="minute-hand" id="minuteHand"></div>
+            <div class="second-hand" id="secondHand"></div>
+            <div class="clock-center"></div>
+          </div>
+        </div>
+      </div>
+      <!-- Fenêtre bas gauche : Twitch -->
+      <div class="video">
+        <div id="twitch-embed2"></div>
+      </div>
+    </section>
+    <section class="meteo">
+      <iframe id="meteoFrame"
+        src="https://www.meteoblue.com/fr/meteo/widget/three/noeux-les-mines_france_2990070?geoloc=fixed&days=3&tempunit=CELSIUS&windunit=KILOMETER_PER_HOUR&layout=dark"
+        frameborder="0" scrolling="NO"
+        style="width:100%; height:616px;">
+      </iframe>
+      <div id="dateDisplay"></div>
+    </section>
+  </main>
+
+  <script>
+    function updateAnalogClock() {
+      const now = new Date();
+      const hours = now.getHours() % 12;
+      const minutes = now.getMinutes();
+      const seconds = now.getSeconds();
+      const hourAngle = (hours * 30) + (minutes * 0.5);
+      const minuteAngle = minutes * 6;
+      const secondAngle = seconds * 6;
+      const hourHand = document.getElementById('hourHand');
+      const minuteHand = document.getElementById('minuteHand');
+      const secondHand = document.getElementById('secondHand');
+      if (hourHand) {
+        hourHand.style.transform = `translate(-50%, -100%) rotate(${hourAngle}deg)`;
+      }
+      if (minuteHand) {
+        minuteHand.style.transform = `translate(-50%, -100%) rotate(${minuteAngle}deg)`;
+      }
+      if (secondHand) {
+        secondHand.style.transform = `translate(-50%, -100%) rotate(${secondAngle}deg)`;
+      }
+    }
+
+    function updateDate() {
+      const now = new Date();
+      const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+      const dateStr = now.toLocaleDateString('fr-FR', options);
+      const display = document.getElementById("dateDisplay");
+      if (display) {
+        display.textContent = dateStr;
+      }
+    }
+
+    setInterval(updateAnalogClock, 1000);
+    updateAnalogClock();
+    updateDate();
+    setInterval(updateDate, 60000);
+
+    // Initialisation Twitch
+    new Twitch.Embed("twitch-embed2", {
+      width: "100%",
+      height: 300,
+      channel: "nom_de_ta_chaine", // <<< Remplace par le nom de ta chaîne Twitch
+      layout: "video"
+    });
+  </script>
+</body>
+</html>
