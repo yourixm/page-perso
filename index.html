@@ -166,6 +166,9 @@
         frameborder="0" scrolling="NO"
         style="width:100%; height:550px;">
       </iframe>
+      <div style="text-align: center; font-size: 12px; color: #ffff00; margin-top: 5px;">
+        Météo Noeux-les-Mines (62290)
+      </div>
       <div id="dateDisplay">Chargement de la date...</div>
     </section>
   </main>
@@ -368,6 +371,11 @@
       const frame = document.getElementById("meteoFrame");
       frame.src = frame.src;
     }, 600000);
+
+    // Actualiser la page toutes les heures (3600000 ms = 1 heure)
+    setInterval(() => {
+      location.reload();
+    }, 3600000);
   </script>
 </body>
 </html>
